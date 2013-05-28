@@ -13,24 +13,8 @@ var gridZ = false;
 var axes = false;
 var ground = false;
 var sounds = null;
-var impMesh
 
-function ensureLoop( animation ) {
 
-    for ( var i = 0; i < animation.hierarchy.length; i ++ ) {
-
-        var bone = animation.hierarchy[ i ];
-
-        var first = bone.keys[ 0 ];
-        var last = bone.keys[ bone.keys.length - 1 ];
-
-        last.pos = first.pos;
-        last.rot = first.rot;
-        last.scl = first.scl;
-
-    }
-
-}
 
 function addElements(){
     var redMaterial = new THREE.MeshLambertMaterial( { color: 0xFF0000 } );
@@ -38,44 +22,15 @@ function addElements(){
         new THREE.SphereGeometry( 15, 32, 16 ), redMaterial );
     sphere.position.y = 50;
     scene.add( sphere );
+
     loader = new THREE.JSONLoader();
-    loader.load( 'models/imp2.js', function ( geometry, materials ) {
+        loader.load( 'models/blenderTest.js', function ( geometry ) {
 
-        for ( var i = 0; i < materials.length; i ++ ) {
-
-                    var m = materials[ i ];
-                    m.skinning = true;
-
-                    // m.specular.setHSL( 0, 0, 0.1 );
-
-                    // m.color.setHSL( 0.6, 0, 0.6 );
-                    // m.ambient.copy( m.color );
-
-                    //m.map = map;
-                    //m.envMap = envMap;
-                    //m.bumpMap = bumpMap;
-                    //m.bumpScale = 2;
-
-                    //m.combine = THREE.MixOperation;
-                    //m.reflectivity = 0.75;
-
-                    m.wrapAround = true;
-
-                }
-
-         //       mesh = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial( materials ) );
-
-
-        ensureLoop(geometry.animation);
-
-        THREE.AnimationHandler.add( geometry.animation );
-        mesh = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial( materials) );
-        impMesh = mesh;
+        mesh = new THREE.Mesh( geometry, new THREE.MeshNormalMaterial( { overdraw: true } ) );
+        mesh.scale.set(10.0, 10.0, 10.0);
         scene.add( mesh );
-        animation = new THREE.Animation( mesh, geometry.animation.name );
-        animation.interpolationType = THREE.AnimationHandler.LINEAR;
-        animation.play( true, Math.random() * 1 );
-        } );
+
+    } );
 
 }
 
@@ -169,7 +124,6 @@ function render() {
         fillScene();
     }
 
-    THREE.AnimationHandler.update( delta );
     renderer.render(scene, camera);
 }
 

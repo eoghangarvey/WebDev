@@ -13,69 +13,102 @@ var gridZ = false;
 var axes = false;
 var ground = false;
 var sounds = null;
-var impMesh
+
+var FLOOR = -250;
+
 
 function ensureLoop( animation ) {
 
-    for ( var i = 0; i < animation.hierarchy.length; i ++ ) {
+        for ( var i = 0; i < animation.hierarchy.length; i ++ ) {
 
-        var bone = animation.hierarchy[ i ];
+            var bone = animation.hierarchy[ i ];
 
-        var first = bone.keys[ 0 ];
-        var last = bone.keys[ bone.keys.length - 1 ];
+            var first = bone.keys[ 0 ];
+            var last = bone.keys[ bone.keys.length - 1 ];
 
-        last.pos = first.pos;
-        last.rot = first.rot;
-        last.scl = first.scl;
+            last.pos = first.pos;
+            last.rot = first.rot;
+            last.scl = first.scl;
+
+        }
 
     }
 
+
+function createScene( geometry, x, y, z, s ) {
+
+    ensureLoop( geometry.animation );
+    console.log(geometry);
+    geometry.computeBoundingBox();
+    var bb = geometry.boundingBox;
+
+    THREE.AnimationHandler.add( geometry.animation );
+
+    for ( var i = 0; i < geometry.materials.length; i ++ ) {
+
+        var m = geometry.materials[ i ];
+        m.skinning = true;
+
+        m.wrapAround = true;
+
+        if ( m.uniforms ) {
+
+            m.uniforms.wrapRGB.value.set( 0.75, 0.5, 0.5 );
+
+        }
+
+        if ( m.name === "archvile_hand" ) {
+
+            m.metal = true;
+            m.emissive.setRGB( 0.95, 0.95, 0.95 );
+
+            m.polygonOffset = true;
+            m.polygonOffsetFactor = -3;
+            m.polygonOffsetUnits = 1;
+
+        }
+
+        if ( m.name === "cyberdemon_body" ) {
+
+            m.metal = true;
+
+        }
+
+    }
+
+
+    var mesh = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial() );
+    mesh.position.set( x - 200, y - bb.min.y * s, z );
+    mesh.scale.set( s, s, s );
+    mesh.rotation.y = Math.PI * -0.5;
+    scene.add( mesh );
+
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
+    animation = new THREE.Animation( mesh, geometry.animation.name );
+    animation.interpolationType = THREE.AnimationHandler.LINEAR;
+
+    animation.play( true, Math.random() * 1 );
+
 }
 
+
 function addElements(){
-    var redMaterial = new THREE.MeshLambertMaterial( { color: 0xFF0000 } );
-    sphere = new THREE.Mesh( 
-        new THREE.SphereGeometry( 15, 32, 16 ), redMaterial );
-    sphere.position.y = 50;
-    scene.add( sphere );
+    var scale = 5;
+    var dy = 15;
+
+    // var loader = new THREE.JSONLoader(),
+    //                 callback = function( geometry ) { createScene( geometry,  0, FLOOR, 0, 7 ) };
+
+    // loader.load( "models/imp2.js", function( geometry ) {
+    //     createScene( geometry,  -300, FLOOR - dy, -400, scale * 1.05 );
+    // } );
     loader = new THREE.JSONLoader();
-    loader.load( 'models/imp2.js', function ( geometry, materials ) {
-
-        for ( var i = 0; i < materials.length; i ++ ) {
-
-                    var m = materials[ i ];
-                    m.skinning = true;
-
-                    // m.specular.setHSL( 0, 0, 0.1 );
-
-                    // m.color.setHSL( 0.6, 0, 0.6 );
-                    // m.ambient.copy( m.color );
-
-                    //m.map = map;
-                    //m.envMap = envMap;
-                    //m.bumpMap = bumpMap;
-                    //m.bumpScale = 2;
-
-                    //m.combine = THREE.MixOperation;
-                    //m.reflectivity = 0.75;
-
-                    m.wrapAround = true;
-
-                }
-
-         //       mesh = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial( materials ) );
-
-
-        ensureLoop(geometry.animation);
-
-        THREE.AnimationHandler.add( geometry.animation );
-        mesh = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial( materials) );
-        impMesh = mesh;
+        loader.load( 'models/waltHeadLo.js', function ( geometry ) {
+        var mesh = new THREE.SkinnedMesh( geometry, new THREE.MeshFaceMaterial() );
         scene.add( mesh );
-        animation = new THREE.Animation( mesh, geometry.animation.name );
-        animation.interpolationType = THREE.AnimationHandler.LINEAR;
-        animation.play( true, Math.random() * 1 );
-        } );
+    } );
 
 }
 
@@ -101,7 +134,7 @@ function fillScene() {
     if (gridZ) { Coordinates.drawGrid({size:10000,scale:0.01, orientation:"z"}); }
     if (axes) {Coordinates.drawAllAxes({axisLength:300,axisRadius:2,axisTess:50});}
 
-    addElements();
+   //addElements();
 }
 
 
@@ -149,8 +182,7 @@ function init() {
 }
 
 function animate() {
-    //window.requestAnimationFrame(animate);
-    requestAnimationFrame( animate );
+    window.requestAnimationFrame(animate);
     render();
 }
 
@@ -169,7 +201,7 @@ function render() {
         fillScene();
     }
 
-    THREE.AnimationHandler.update( delta );
+    //THREE.AnimationHandler.update( delta );
     renderer.render(scene, camera);
 }
 
@@ -196,5 +228,6 @@ function setupGui() {
 
 
 init();
+addElements();
 setupGui();
 animate();

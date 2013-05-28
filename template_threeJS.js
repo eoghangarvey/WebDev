@@ -29,9 +29,12 @@ function fillScene() {
 
 var render = function () {
     requestAnimationFrame(render);
+    var delta = clock.getDelta();
+    // delta = 1/30;
+    console.log(delta);
 
-    cube.rotation.x += 0.1;
-    cube.rotation.y += 0.1;
+    cube.rotation.x += (0.05*delta*30);
+    cube.rotation.y += (0.05*delta*30);
 
     renderer.render(scene, camera);
 };
